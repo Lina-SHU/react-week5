@@ -2,6 +2,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { useRef, useEffect, useState } from "react";
 import { Modal } from "bootstrap";
+import { useForm } from "react-hook-form"
 import ProductModal from "./components/ProductModal";
 const {VITE_BASE_URL, VITE_API_PATH} = import.meta.env;
 
@@ -150,6 +151,14 @@ function App() {
     }
   };
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm({
+    mode: 'onTouched'
+  });
+
   // 建立訂單
   const createOrder = async(data) => {
     try {
@@ -262,6 +271,20 @@ function App() {
 
             <hr />
             {/* 訂單資料 */}
+            <div className="row">
+              <div className="col-8 justify-content-center">
+                <form onSubmit={handleSubmit(createOrder)}>
+                  <div class="mb-3">
+                    <label for="username" class="form-label">username</label>
+                    <input type="text" class={`form-control ${errors.username && 'is-invalid'}`} id="username" {...register('username')} placeholder="name@example.com" />
+                    {
+                      errors.username && (<div class="invalid-feedback">{errors.username.message}</div>)
+                    }
+                  </div>
+                  <button type="submit" className="btn btn-primary">送出訂單</button>
+                </form>
+              </div>
+            </div>
           </div>
         </div>
       </div>
