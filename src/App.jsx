@@ -2,7 +2,9 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { useRef, useEffect, useState } from "react";
 import { Modal } from "bootstrap";
-import { useForm } from "react-hook-form"
+import { useForm } from "react-hook-form";
+import Input from "./components/Input";
+import Textarea from "./components/Textarea";
 import ProductModal from "./components/ProductModal";
 const {VITE_BASE_URL, VITE_API_PATH} = import.meta.env;
 
@@ -154,14 +156,24 @@ function App() {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors }
   } = useForm({
     mode: 'onTouched'
   });
 
   // 建立訂單
-  const createOrder = async(data) => {
+  const createOrder = async(info) => {
     try {
+      const data = {
+        user: {
+          name: info.name,
+          email: info.email,
+          tel: info.tel,
+          address: info.address
+        },
+        message: info.message
+      }
       const res = await axios.post(`${VITE_BASE_URL}/api/${VITE_API_PATH}/order`, { data });
       
       Swal.fire({
@@ -171,6 +183,7 @@ function App() {
         showConfirmButton: false,
         timer: 1500
       });
+      reset();
       getCarts();
     } catch (error) {
       console.log(error);
@@ -181,8 +194,9 @@ function App() {
     <>
       <div className="container mt-5">
         <div className="row justify-content-center">
-          <div className="col-10">
+          <div className="col-lg-10">
             {/* 商品列表 */}
+            <h2 className="text-center h4">商品列表</h2>
             <table className="table mb-5">
               <thead>
                 <tr>
@@ -220,6 +234,7 @@ function App() {
             
             <hr />
             {/* 購物車列表 */}
+            <h2 className="text-center h4">購物車列表</h2>
             <table className="table caption-top">
               <caption>
                 <button type="button" className="btn btn-sm btn-outline-danger" onClick={deleteCarts}>清空購物車</button>
@@ -230,7 +245,7 @@ function App() {
                   <th scope="col" width="25%">商品名稱</th>
                   <th scope="col">售價</th>
                   <th scope="col">總價</th>
-                  <th scope="col" width="15%"></th>
+                  <th scope="col" width="20%"></th>
                   <th scope="col"></th>
                 </tr>
               </thead>
@@ -264,24 +279,89 @@ function App() {
                   )
                 }
                 <tr>
-                  <td colSpan={6}>{cartsInfo.final_total}</td>
+                  <td colSpan={6} className="text-end">總金額：{cartsInfo.final_total} 元</td>
                 </tr>
               </tbody>
             </table>
 
             <hr />
             {/* 訂單資料 */}
-            <div className="row">
-              <div className="col-8 justify-content-center">
+            <div className="row justify-content-center mb-5">
+              <div className="col-lg-8">
+                <h2 className="text-center h4">訂單資料</h2>
                 <form onSubmit={handleSubmit(createOrder)}>
-                  <div class="mb-3">
-                    <label for="username" class="form-label">username</label>
-                    <input type="text" class={`form-control ${errors.username && 'is-invalid'}`} id="username" {...register('username')} placeholder="name@example.com" />
-                    {
-                      errors.username && (<div class="invalid-feedback">{errors.username.message}</div>)
-                    }
-                  </div>
-                  <button type="submit" className="btn btn-primary">送出訂單</button>
+                  <Input
+                    register={register}
+                    errors={errors}
+                    id="name"
+                    type="text"
+                    labelText="姓名"
+                    rules={{
+                        required: {
+                          value: true,
+                          message: '姓名為必填'
+                        }
+                    }}
+                    placeholder="請填寫姓名"
+                  />
+                  <Input
+                    register={register}
+                    errors={errors}
+                    id="email"
+                    type="email"
+                    labelText="Email"
+                    rules={{
+                        required: {
+                          value: true,
+                          message: 'Email 為必填'
+                        },
+                        pattern: {
+                          value: /^\S+@\S+$/i,
+                          message: 'Email 格式不正確'
+                        }
+                    }}
+                    placeholder="請填寫 Email"
+                  />
+                  <Input
+                    register={register}
+                    errors={errors}
+                    id="tel"
+                    type="tel"
+                    labelText="電話"
+                    rules={{
+                        required: {
+                          value: true,
+                          message: '電話為必填'
+                        },
+                        minLength: {
+                          value: 8,
+                          message: '電話不少於 8 碼'
+                        }
+                    }}
+                    placeholder="請填寫電話"
+                  />
+                  <Input
+                    register={register}
+                    errors={errors}
+                    id="address"
+                    type="text"
+                    labelText="地址"
+                    rules={{
+                        required: {
+                          value: true,
+                          message: '地址為必填'
+                        }
+                    }}
+                    placeholder="請填寫地址"
+                  />
+                  <Textarea
+                    register={register}
+                    errors={errors}
+                    id="message"
+                    labelText="留言"
+                    placeholder="請填寫留言"
+                  />
+                  <button type="submit" className="btn btn-primary w-100">送出訂單</button>
                 </form>
               </div>
             </div>
