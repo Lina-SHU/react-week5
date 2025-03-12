@@ -2,3 +2,8 @@
 @import "./variables";
 @import "./variables-dark";
 @import "bootstrap/scss/bootstrap";
+
+.prd-img{
+    width: 150px;
+    object-fit: cover;
+}
