@@ -1,6 +1,6 @@
 import axios from "axios";
 import Swal from "sweetalert2";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useCallback, useMemo } from "react";
 import { Modal } from "bootstrap";
 import { useForm } from "react-hook-form";
 import ClipLoader from "react-spinners/ClipLoader";
@@ -18,6 +18,8 @@ function App() {
 
   const productModalRef = useRef(null);
   const productModal = useRef(null);
+
+  const productList = useMemo(() => products, [products]);
   useEffect(() => {
     productModal.current = new Modal(productModalRef.current, { backdrop: 'static' });
   }, []);
@@ -25,9 +27,9 @@ function App() {
     productModal.current.show();
     await getProduct(prd.id);
   };
-  const closeProductModal = () => {
+  const closeProductModal = useCallback(() => {
     productModal.current.hide();
-  };
+  }, []);
   
   // 取得商品列表
   const getProducts = async() => {
@@ -72,7 +74,7 @@ function App() {
   };
 
   // 加入購物車
-  const addCart = async(prdId, qty = 1) => {
+  const addCart = useCallback(async(prdId, qty = 1) => {
     try {
       setLoadingState(true);
       const data = {
@@ -95,7 +97,7 @@ function App() {
     } finally {
       setLoadingState(false);
     }
-  };
+  }, [closeProductModal]);
 
   // 移除購物車單一商品
   const deleteCartItem = (cartId) => {
@@ -265,7 +267,7 @@ function App() {
               </thead>
               <tbody>
                 {
-                  products.map((prd) => {
+                  productList.map((prd) => {
                     return (
                       <tr key={prd.id}>
                         <td>

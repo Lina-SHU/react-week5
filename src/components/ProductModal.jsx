@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 
-const ProductModal = ({ productModalRef, closeProductModal, product, addCart }) => {
+const ProductModal = memo(({ productModalRef, closeProductModal, product, addCart }) => {
     const [num, setNum] = useState(1);
     console.log('product modal');
 
@@ -50,6 +50,6 @@ const ProductModal = ({ productModalRef, closeProductModal, product, addCart }) 
             </div>
         </div>
     )
-};
+});
 
 export default ProductModal;
