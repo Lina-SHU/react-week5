@@ -154,14 +154,14 @@ function App() {
   };
 
   // 修改購物車商品數量
-  const editCartItem = async(prd, qty) => {
+  const editCartItem = async(cartId, qty) => {
     try {
-      setLoadingListState((preState) => [...preState, prd.id]);
+      setLoadingListState((preState) => [...preState, cartId]);
       const data = {
-        product_id: prd.id,
+        product_id: cartId,
         qty: qty
       };
-      const res = await axios.put(`${VITE_BASE_URL}/api/${VITE_API_PATH}/cart/${prd.id}`, { data });
+      const res = await axios.put(`${VITE_BASE_URL}/api/${VITE_API_PATH}/cart/${cartId}`, { data });
       
       Swal.fire({
         position: "center",
@@ -174,7 +174,7 @@ function App() {
     } catch (error) {
       console.log(error);
     } finally {
-      setLoadingListState((prevState) => prevState.filter((prd) => prd !== prd.id));
+      setLoadingListState((prevState) => prevState.filter((prd) => prd !== cartId));
     }
   };
 
@@ -307,7 +307,7 @@ function App() {
               </thead>
               <tbody>
                 {
-                  cartsInfo.carts ? cartsInfo.carts.map((cart) => {
+                  cartsInfo.carts && cartsInfo.carts.length > 0 ? cartsInfo.carts.map((cart) => {
                     return (
                       <tr key={cart.id}>
                         <td>
@@ -321,14 +321,14 @@ function App() {
                             <button
                               className="btn btn-outline-secondary"
                               type="button"
-                              onClick={() => editCartItem(cart.product, cart.qty - 1)}
-                              disabled={loadingListState.includes(cart.product?.id)}
+                              onClick={() => editCartItem(cart.id, cart.qty - 1)}
+                              disabled={loadingListState.includes(cart.product?.id) || cart.qty <= 1}
                             >-</button>
                             <input type="text" className="form-control text-center" value={cart.qty} readOnly />
                             <button
                               className="btn btn-outline-secondary"
                               type="button"
-                              onClick={() => editCartItem(cart.product, cart.qty + 1)}
+                              onClick={() => editCartItem(cart.id, cart.qty + 1)}
                               disabled={loadingListState.includes(cart.product?.id)}
                             >+</button>
                           </div>
