@@ -3,6 +3,7 @@ import Swal from "sweetalert2";
 import { useRef, useEffect, useState } from "react";
 import { Modal } from "bootstrap";
 import { useForm } from "react-hook-form";
+import ClipLoader from "react-spinners/ClipLoader";
 import Input from "./components/Input";
 import Textarea from "./components/Textarea";
 import ProductModal from "./components/ProductModal";
@@ -12,6 +13,8 @@ function App() {
   const [products, setProducts] = useState([]);
   const [product, setProduct] = useState({});
   const [cartsInfo, setCartsInfo] = useState({});
+  const [loadingState, setLoadingState] = useState(false);
+  const [loadingListState, setLoadingListState] = useState([]);
 
   const productModalRef = useRef(null);
   const productModal = useRef(null);
@@ -29,19 +32,25 @@ function App() {
   // 取得商品列表
   const getProducts = async() => {
     try {
+      setLoadingState(true);
       const res = await axios.get(`${VITE_BASE_URL}/api/${VITE_API_PATH}/products/all`);
       setProducts(res.data.products);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoadingState(false);
     }
   };
   // 取得購物車列表
   const getCarts = async() => {
     try {
+      setLoadingState(true);
       const res = await axios.get(`${VITE_BASE_URL}/api/${VITE_API_PATH}/cart`);
       setCartsInfo(res.data.data);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoadingState(false);
     }
   };
   useEffect(() => {
@@ -52,16 +61,20 @@ function App() {
   // 取得單一商品詳細資訊
   const getProduct = async(productId) => {
     try {
+      setLoadingState(true);
       const res = await axios.get(`${VITE_BASE_URL}/api/${VITE_API_PATH}/product/${productId}`);
       setProduct(res.data.product);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoadingState(false);
     }
   };
 
   // 加入購物車
   const addCart = async(prd) => {
     try {
+      setLoadingState(true);
       const data = {
         product_id: prd.id,
         qty: 1
@@ -78,6 +91,8 @@ function App() {
       getCarts();
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoadingState(false);
     }
   };
 
@@ -90,6 +105,7 @@ function App() {
       cancelButtonText: `取消`
     }).then(async () => {
       try {
+        setLoadingState(true);
         const res = await axios.delete(`${VITE_BASE_URL}/api/${VITE_API_PATH}/cart/${cartId}`);
         
         Swal.fire({
@@ -102,6 +118,8 @@ function App() {
         getCarts();
       } catch (error) {
         console.log(error);
+      } finally {
+        setLoadingState(false);
       }
     });
   };
@@ -115,6 +133,7 @@ function App() {
       cancelButtonText: `取消`
     }).then(async () => {
       try {
+        setLoadingState(true);
         const res = await axios.delete(`${VITE_BASE_URL}/api/${VITE_API_PATH}/carts`);
         
         Swal.fire({
@@ -127,16 +146,19 @@ function App() {
         getCarts();
       } catch (error) {
         console.log(error);
+      } finally {
+        setLoadingState(false);
       }
     });
   };
 
   // 修改購物車商品數量
-  const editCartItem = async(prd) => {
+  const editCartItem = async(prd, qty) => {
     try {
+      setLoadingListState((preState) => [...preState, prd.id]);
       const data = {
         product_id: prd.id,
-        qty: 1
+        qty: qty
       };
       const res = await axios.put(`${VITE_BASE_URL}/api/${VITE_API_PATH}/cart`, { data });
       
@@ -150,6 +172,8 @@ function App() {
       getCarts();
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoadingListState((prevState) => prevState.filter((prd) => prd !== prd.id));
     }
   };
 
@@ -165,6 +189,18 @@ function App() {
   // 建立訂單
   const createOrder = async(info) => {
     try {
+      setLoadingState(true);
+      // 購物車為空時提醒
+      if (cartsInfo.carts.length === 0) {
+        Swal.fire({
+          position: "center",
+          icon: "warning",
+          title: '目前購物車是空的唷！',
+          showConfirmButton: false,
+          timer: 1500
+        });
+        return;
+      }
       const data = {
         user: {
           name: info.name,
@@ -187,11 +223,30 @@ function App() {
       getCarts();
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoadingState(false);
     }
   };
 
   return (
     <>
+      {/* Loading 效果 */}
+      {
+        loadingState && (
+          <div className="position-fixed top-0 bottom-0 start-0 end-0 d-flex justify-content-center align-items-center" style={{
+            backdropFilter: 'blur(2px)',
+            backgroundColor: 'rgba(255, 255, 255, .5)'
+          }}>
+            <ClipLoader
+              color={'#000000'}
+              size={30}
+              aria-label="Loading Spinner"
+              data-testid="loader"
+            />
+          </div>
+        )
+      }
+
       <div className="container mt-5">
         <div className="row justify-content-center">
           <div className="col-lg-10">
@@ -262,9 +317,19 @@ function App() {
                         <td>{cart.final_total}</td>
                         <td>
                           <div className="input-group mb-3">
-                            <button className="btn btn-outline-secondary" type="button">-</button>
-                            <input type="text" className="form-control text-center" value={cart.qty} />
-                            <button className="btn btn-outline-secondary" type="button">+</button>
+                            <button
+                              className="btn btn-outline-secondary"
+                              type="button"
+                              onClick={() => editCartItem(cart.product, cart.qty - 1)}
+                              disabled={loadingListState.includes(cart.product?.id)}
+                            >-</button>
+                            <input type="text" className="form-control text-center" value={cart.qty} readOnly />
+                            <button
+                              className="btn btn-outline-secondary"
+                              type="button"
+                              onClick={() => editCartItem(cart.product, cart.qty + 1)}
+                              disabled={loadingListState.includes(cart.product?.id)}
+                            >+</button>
                           </div>
                         </td>
                         <td>
