@@ -1,4 +1,9 @@
-const ProductModal = ({ productModalRef, closeProductModal, product }) => {
+import { useState } from "react";
+
+const ProductModal = ({ productModalRef, closeProductModal, product, addCart }) => {
+    const [num, setNum] = useState(1);
+    console.log('product modal');
+
     return (
         <div className="modal fade" ref={productModalRef} id="productModal" tabIndex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
             <div className="modal-dialog modal-dialog-centered modal-lg">
@@ -14,12 +19,29 @@ const ProductModal = ({ productModalRef, closeProductModal, product }) => {
                     </div>
                     <div className="col-md-6 d-flex flex-column justify-content-between">
                         <div>
-                        <h2 className="fs-4">{product.title}</h2>
-                        <p>{product.content}</p>
+                            <h2 className="fs-4">{product.title}</h2>
+                            <p>{product.content}</p>
                         </div>
-                        <div className="d-flex align-items-center">
-                        <del>{product.origin_price}</del>
-                        <p className="text-danger fs-4 mb-0">{product.price}</p>元
+                        <div className="d-flex justify-content-between">
+                            <div className="d-flex align-items-center">
+                                <del>{product.origin_price}</del>
+                                <p className="text-danger fs-4 mb-0">{product.price}</p>元
+                            </div>
+                            <div>
+                                <button
+                                    className="btn btn-outline-secondary"
+                                    type="button"
+                                    onClick={() => setNum(num - 1)}
+                                    disabled={num === 1}
+                                >-</button>
+                                <input type="text" className="form-control text-center" value={num} readOnly />
+                                <button
+                                    className="btn btn-outline-secondary"
+                                    type="button"
+                                    onClick={() => setNum(num + 1)}
+                                >+</button>
+                                <button type="button" className="btn btn-sm btn-success" onClick={() => addCart(product.id, num)}>加入購物車</button>
+                            </div>
                         </div>
                     </div>
                 </div>

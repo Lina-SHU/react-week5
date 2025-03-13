@@ -72,12 +72,12 @@ function App() {
   };
 
   // 加入購物車
-  const addCart = async(prd) => {
+  const addCart = async(prdId, qty = 1) => {
     try {
       setLoadingState(true);
       const data = {
-        product_id: prd.id,
-        qty: 1
+        product_id: prdId,
+        qty
       };
       const res = await axios.post(`${VITE_BASE_URL}/api/${VITE_API_PATH}/cart`, { data });
       
@@ -160,7 +160,7 @@ function App() {
         product_id: prd.id,
         qty: qty
       };
-      const res = await axios.put(`${VITE_BASE_URL}/api/${VITE_API_PATH}/cart`, { data });
+      const res = await axios.put(`${VITE_BASE_URL}/api/${VITE_API_PATH}/cart/${prd.id}`, { data });
       
       Swal.fire({
         position: "center",
@@ -275,7 +275,7 @@ function App() {
                         <td>{prd.price}</td>
                         <td>
                           <button type="button" className="btn btn-sm btn-primary me-1" onClick={() => openProductModal(prd)}>詳細資訊</button>
-                          <button type="button" className="btn btn-sm btn-success" onClick={() => addCart(prd)}>加入購物車</button>
+                          <button type="button" className="btn btn-sm btn-success" onClick={() => addCart(prd.id)}>加入購物車</button>
                         </td>
                       </tr>
                     )
@@ -285,7 +285,7 @@ function App() {
             </table>
 
             {/* 商品詳細資訊 */}
-            <ProductModal productModalRef={productModalRef} closeProductModal={closeProductModal} product={product} />
+            <ProductModal productModalRef={productModalRef} closeProductModal={closeProductModal} product={product} addCart={addCart} />
             
             <hr />
             {/* 購物車列表 */}
