@@ -89,6 +89,7 @@ function App() {
         timer: 1500
       });
       getCarts();
+      closeProductModal();
     } catch (error) {
       console.log(error);
     } finally {
