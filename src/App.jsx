@@ -1,6 +1,6 @@
 import axios from "axios";
 import Swal from "sweetalert2";
-import { useRef, useEffect, useState, useCallback, useMemo } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { Modal } from "bootstrap";
 import { useForm } from "react-hook-form";
 import ClipLoader from "react-spinners/ClipLoader";
@@ -15,15 +15,16 @@ function App() {
   const [cartsInfo, setCartsInfo] = useState({});
   const [loadingState, setLoadingState] = useState(false);
   const [loadingListState, setLoadingListState] = useState([]);
+  const [num, setNum] = useState(1); // 商品詳細內的數量
 
   const productModalRef = useRef(null);
   const productModal = useRef(null);
 
-  const productList = useMemo(() => products, [products]);
   useEffect(() => {
     productModal.current = new Modal(productModalRef.current, { backdrop: 'static' });
   }, []);
   const openProductModal = async (prd) => {
+    setNum(1); // 商品詳細內的數量初始化
     productModal.current.show();
     await getProduct(prd.id);
   };
@@ -38,7 +39,13 @@ function App() {
       const res = await axios.get(`${VITE_BASE_URL}/api/${VITE_API_PATH}/products/all`);
       setProducts(res.data.products);
     } catch (error) {
-      console.log(error);
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: error.response.data.message,
+        showConfirmButton: false,
+        timer: 1500
+      });
     } finally {
       setLoadingState(false);
     }
@@ -50,7 +57,13 @@ function App() {
       const res = await axios.get(`${VITE_BASE_URL}/api/${VITE_API_PATH}/cart`);
       setCartsInfo(res.data.data);
     } catch (error) {
-      console.log(error);
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: error.response.data.message,
+        showConfirmButton: false,
+        timer: 1500
+      });
     } finally {
       setLoadingState(false);
     }
@@ -67,7 +80,13 @@ function App() {
       const res = await axios.get(`${VITE_BASE_URL}/api/${VITE_API_PATH}/product/${productId}`);
       setProduct(res.data.product);
     } catch (error) {
-      console.log(error);
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: error.response.data.message,
+        showConfirmButton: false,
+        timer: 1500
+      });
     } finally {
       setLoadingState(false);
     }
@@ -93,7 +112,13 @@ function App() {
       getCarts();
       closeProductModal();
     } catch (error) {
-      console.log(error);
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: error.response.data.message,
+        showConfirmButton: false,
+        timer: 1500
+      });
     } finally {
       setLoadingState(false);
     }
@@ -120,7 +145,13 @@ function App() {
         });
         getCarts();
       } catch (error) {
-        console.log(error);
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: error.response.data.message,
+          showConfirmButton: false,
+          timer: 1500
+        });
       } finally {
         setLoadingState(false);
       }
@@ -148,7 +179,13 @@ function App() {
         });
         getCarts();
       } catch (error) {
-        console.log(error);
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: error.response.data.message,
+          showConfirmButton: false,
+          timer: 1500
+        });
       } finally {
         setLoadingState(false);
       }
@@ -174,7 +211,13 @@ function App() {
       });
       getCarts();
     } catch (error) {
-      console.log(error);
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: error.response.data.message,
+        showConfirmButton: false,
+        timer: 1500
+      });
     } finally {
       setLoadingListState((prevState) => prevState.filter((prd) => prd !== cartId));
     }
@@ -225,7 +268,13 @@ function App() {
       reset();
       getCarts();
     } catch (error) {
-      console.log(error);
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: error.response.data.message,
+        showConfirmButton: false,
+        timer: 1500
+      });
     } finally {
       setLoadingState(false);
     }
@@ -267,7 +316,7 @@ function App() {
               </thead>
               <tbody>
                 {
-                  productList.map((prd) => {
+                  products.map((prd) => {
                     return (
                       <tr key={prd.id}>
                         <td>
@@ -288,14 +337,14 @@ function App() {
             </table>
 
             {/* 商品詳細資訊 */}
-            <ProductModal productModalRef={productModalRef} closeProductModal={closeProductModal} product={product} addCart={addCart} />
+            <ProductModal productModalRef={productModalRef} closeProductModal={closeProductModal} product={product} addCart={addCart} num={num} setNum={setNum} />
             
             <hr />
             {/* 購物車列表 */}
             <h2 className="text-center h4">購物車列表</h2>
             <table className="table caption-top">
               <caption>
-                <button type="button" className="btn btn-sm btn-outline-danger" onClick={deleteCarts}>清空購物車</button>
+                <button type="button" className={`btn btn-sm btn-outline-danger ${cartsInfo.carts && cartsInfo.carts.length === 0 && 'disabled'}`} onClick={deleteCarts}>清空購物車</button>
               </caption>
               <thead>
                 <tr>

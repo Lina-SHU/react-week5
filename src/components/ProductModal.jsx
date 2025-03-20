@@ -1,9 +1,6 @@
-import { useState, memo } from "react";
+import { memo } from "react";
 
-const ProductModal = memo(({ productModalRef, closeProductModal, product, addCart }) => {
-    const [num, setNum] = useState(1);
-    console.log('product modal');
-
+const ProductModal = memo(({ productModalRef, closeProductModal, product, addCart, num, setNum }) => {
     return (
         <div className="modal fade" ref={productModalRef} id="productModal" tabIndex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
             <div className="modal-dialog modal-dialog-centered modal-xl">
