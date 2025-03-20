@@ -16,6 +16,14 @@
     pointer-events: auto;
 }
 
+.btn.disabled {
+    pointer-events: auto;
+}
+
 .btn:disabled:hover {
+    cursor: not-allowed !important;
+}
+
+.btn.disabled:hover {
     cursor: not-allowed !important;
 }
